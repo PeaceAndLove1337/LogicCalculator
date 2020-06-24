@@ -2,16 +2,13 @@ package project;
 
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Stack;
+import java.util.*;
 
 interface ILogicExpression {
     Boolean isCorrectInput(String inputString);
 
     String translateToPostfix(String inputString);
 
-    Byte toSolveExpression(String inputString);
 }
 
 
@@ -22,13 +19,14 @@ interface ILogicExpression {
  *
  *
  * _________________________________________________________________________________________________________________________________________
- * Реализация таблиц истинности, возможно потребует использования бинарных операций.
+ *
  *_________________________________________________________________________________________________________________________________________
  *
  * Сделать тестовые примеры для таблиц истинности
  *
- *
- * Сравнить работоспособность на обоих способах инпута, сходятся ли они или нет.
+ * Подумать что можно сделать с функциональностью, касающейся 0 и 1 на входе(как изображать таблицу истинности),
+ * а так же касаемо входа без операций. Напр: "а".
+ * Программа должна будет поддерживать возможность изменения приоритетов операций.(Реализовано в методе GetPriority в LogicFunctions
  *
  *_________________________________________________________________________________________________________________________________________
  *  Проверить таблицы истинности для всех инпутов.
@@ -40,56 +38,58 @@ interface ILogicExpression {
 
 
 class LogicExpression implements ILogicExpression {
-    //String operations=" ¬   ∧ |     ∨ ↓   ⊕ ↔ → ←  ";//добавить множество и вместо строки заюзать множество
-    HashSet<Character> operationsWithInversion = new HashSet<Character>(Arrays.asList('¬', '∧', '|', '∨', '↓', '⊕', '↔', '→', '←'));
+    private HashSet<Character> operationsWithInversion = new HashSet<Character>(Arrays.asList('¬', '∧', '|', '∨', '↓', '⊕', '↔', '→', '←'));
 
-    HashSet<Character> operations = new HashSet<Character>(Arrays.asList('∧', '|', '∨', '↓', '⊕', '↔', '→', '←'));
+    private HashSet<Character> operations = new HashSet<Character>(Arrays.asList('∧', '|', '∨', '↓', '⊕', '↔', '→', '←'));
 
-    HashSet<Character> symbols = new HashSet<Character>(Arrays.asList('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
+    private HashSet<Character> symbols = new HashSet<Character>(Arrays.asList('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
             'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
             'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1'));
+    private HashSet<Character> symbolsWithoutOneZero = new HashSet<Character>(Arrays.asList('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
+            'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+            'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'));
 
     @Override
-    public Boolean isCorrectInput(String inputString) {
+    public Boolean isCorrectInput(String logicExpression) {
         int bracketBalance = 0;
         //Boolean isRight=true;
-        inputString = inputString.replace(" ", "");
-        inputString = "=" + inputString + "=";
+        logicExpression = logicExpression.replace(" ", "");
+        logicExpression = "=" + logicExpression + "=";
         //System.out.println(inputString);
         int i = 1;
-        while (inputString.charAt(i) != '=') {
+        while (logicExpression.charAt(i) != '=') {
 
-            if (inputString.charAt(i) == '¬') {
-                if ((inputString.charAt(i - 1) == '(' || inputString.charAt(i - 1) == '=') && (inputString.charAt(i + 1) == '(' || symbols.contains(inputString.charAt(i + 1)))) {
+            if (logicExpression.charAt(i) == '¬') {
+                if ((logicExpression.charAt(i - 1) == '(' || logicExpression.charAt(i - 1) == '=') && (logicExpression.charAt(i + 1) == '(' || symbols.contains(logicExpression.charAt(i + 1)))) {
                     i++;
                     continue;
                 } else
                     return false;
-            } else if (symbols.contains(inputString.charAt(i))) {
-                if ((inputString.charAt(i - 1) == '(' || inputString.charAt(i - 1) == '=' || operationsWithInversion.contains(inputString.charAt(i - 1))) &&
-                        (operations.contains(inputString.charAt(i + 1)) || inputString.charAt(i + 1) == ')' || inputString.charAt(i + 1) == '=')) {
+            } else if (symbols.contains(logicExpression.charAt(i))) {
+                if ((logicExpression.charAt(i - 1) == '(' || logicExpression.charAt(i - 1) == '=' || operationsWithInversion.contains(logicExpression.charAt(i - 1))) &&
+                        (operations.contains(logicExpression.charAt(i + 1)) || logicExpression.charAt(i + 1) == ')' || logicExpression.charAt(i + 1) == '=')) {
                     i++;
                     continue;
                 } else
                     return false;
-            } else if (operations.contains(inputString.charAt(i))) {
-                if ((symbols.contains(inputString.charAt(i - 1)) || inputString.charAt(i - 1) == ')') &&
-                        (symbols.contains(inputString.charAt(i + 1)) || inputString.charAt(i + 1) == '(')) {
+            } else if (operations.contains(logicExpression.charAt(i))) {
+                if ((symbols.contains(logicExpression.charAt(i - 1)) || logicExpression.charAt(i - 1) == ')') &&
+                        (symbols.contains(logicExpression.charAt(i + 1)) || logicExpression.charAt(i + 1) == '(')) {
                     i++;
                     continue;
                 } else
                     return false;
-            } else if (inputString.charAt(i) == '(') {
-                if ((inputString.charAt(i - 1) == '(' || inputString.charAt(i - 1) == '=' || operationsWithInversion.contains(inputString.charAt(i - 1))) &&
-                        (symbols.contains(inputString.charAt(i + 1)) || inputString.charAt(i + 1) == '¬' || inputString.charAt(i + 1) == '(')) {
+            } else if (logicExpression.charAt(i) == '(') {
+                if ((logicExpression.charAt(i - 1) == '(' || logicExpression.charAt(i - 1) == '=' || operationsWithInversion.contains(logicExpression.charAt(i - 1))) &&
+                        (symbols.contains(logicExpression.charAt(i + 1)) || logicExpression.charAt(i + 1) == '¬' || logicExpression.charAt(i + 1) == '(')) {
                     bracketBalance++;
                     i++;
                     continue;
                 } else
                     return false;
-            } else if (inputString.charAt(i) == ')') {
-                if ((symbols.contains(inputString.charAt(i - 1)) || inputString.charAt(i - 1) == ')') &&
-                        (inputString.charAt(i + 1) == '=' || inputString.charAt(i + 1) == ')' || operations.contains(inputString.charAt(i + 1)))) {
+            } else if (logicExpression.charAt(i) == ')') {
+                if ((symbols.contains(logicExpression.charAt(i - 1)) || logicExpression.charAt(i - 1) == ')') &&
+                        (logicExpression.charAt(i + 1) == '=' || logicExpression.charAt(i + 1) == ')' || operations.contains(logicExpression.charAt(i + 1)))) {
                     bracketBalance--;
                     i++;
                     continue;
@@ -108,46 +108,46 @@ class LogicExpression implements ILogicExpression {
 
     //Упрощенный ввод позволяет использовать инверсию сразу после знака, не заключая инверсионное выражение в скобки. Т.е. Например a∧b∧(¬c)∧¬(¬a∧(¬d))=a∧b∧¬c∧¬(¬a∧¬d)
     //Таким образом читаемость сложных выражений повышается в разы
-    public Boolean isCorrectSimplifiedInput(String inputString) {
+    public Boolean isCorrectSimplifiedInput(String logicExpression) {
         int bracketBalance = 0;
         //Boolean isRight=true;
-        inputString = inputString.replace(" ", "");
-        inputString = "=" + inputString + "=";
+        logicExpression = logicExpression.replace(" ", "");
+        logicExpression = "=" + logicExpression + "=";
 
         int i = 1;
-        while (inputString.charAt(i) != '=') {
+        while (logicExpression.charAt(i) != '=') {
 
-            if (inputString.charAt(i) == '¬') {
-                if ((inputString.charAt(i - 1) == '(' || inputString.charAt(i - 1) == '=' || operations.contains(inputString.charAt(i - 1))) && (inputString.charAt(i + 1) == '(' || symbols.contains(inputString.charAt(i + 1)))) {
+            if (logicExpression.charAt(i) == '¬') {
+                if ((logicExpression.charAt(i - 1) == '(' || logicExpression.charAt(i - 1) == '=' || operations.contains(logicExpression.charAt(i - 1))) && (logicExpression.charAt(i + 1) == '(' || symbols.contains(logicExpression.charAt(i + 1)))) {
                     i++;
                     continue;
                 } else
                     return false;
-            } else if (symbols.contains(inputString.charAt(i))) {
-                if ((inputString.charAt(i - 1) == '(' || inputString.charAt(i - 1) == '=' || operationsWithInversion.contains(inputString.charAt(i - 1))) &&
-                        (operations.contains(inputString.charAt(i + 1)) || inputString.charAt(i + 1) == ')' || inputString.charAt(i + 1) == '=')) {
+            } else if (symbols.contains(logicExpression.charAt(i))) {
+                if ((logicExpression.charAt(i - 1) == '(' || logicExpression.charAt(i - 1) == '=' || operationsWithInversion.contains(logicExpression.charAt(i - 1))) &&
+                        (operations.contains(logicExpression.charAt(i + 1)) || logicExpression.charAt(i + 1) == ')' || logicExpression.charAt(i + 1) == '=')) {
                     i++;
                     continue;
                 } else
                     return false;
-            } else if (operations.contains(inputString.charAt(i))) {
-                if ((symbols.contains(inputString.charAt(i - 1)) || inputString.charAt(i - 1) == ')') &&
-                        (symbols.contains(inputString.charAt(i + 1)) || inputString.charAt(i + 1) == '(' || inputString.charAt(i + 1) == '¬')) {
+            } else if (operations.contains(logicExpression.charAt(i))) {
+                if ((symbols.contains(logicExpression.charAt(i - 1)) || logicExpression.charAt(i - 1) == ')') &&
+                        (symbols.contains(logicExpression.charAt(i + 1)) || logicExpression.charAt(i + 1) == '(' || logicExpression.charAt(i + 1) == '¬')) {
                     i++;
                     continue;
                 } else
                     return false;
-            } else if (inputString.charAt(i) == '(') {
-                if ((inputString.charAt(i - 1) == '(' || inputString.charAt(i - 1) == '=' || operationsWithInversion.contains(inputString.charAt(i - 1))) &&
-                        (symbols.contains(inputString.charAt(i + 1)) || inputString.charAt(i + 1) == '¬' || inputString.charAt(i + 1) == '(')) {
+            } else if (logicExpression.charAt(i) == '(') {
+                if ((logicExpression.charAt(i - 1) == '(' || logicExpression.charAt(i - 1) == '=' || operationsWithInversion.contains(logicExpression.charAt(i - 1))) &&
+                        (symbols.contains(logicExpression.charAt(i + 1)) || logicExpression.charAt(i + 1) == '¬' || logicExpression.charAt(i + 1) == '(')) {
                     bracketBalance++;
                     i++;
                     continue;
                 } else
                     return false;
-            } else if (inputString.charAt(i) == ')') {
-                if ((symbols.contains(inputString.charAt(i - 1)) || inputString.charAt(i - 1) == ')') &&
-                        (inputString.charAt(i + 1) == '=' || inputString.charAt(i + 1) == ')' || operations.contains(inputString.charAt(i + 1)))) {
+            } else if (logicExpression.charAt(i) == ')') {
+                if ((symbols.contains(logicExpression.charAt(i - 1)) || logicExpression.charAt(i - 1) == ')') &&
+                        (logicExpression.charAt(i + 1) == '=' || logicExpression.charAt(i + 1) == ')' || operations.contains(logicExpression.charAt(i + 1)))) {
                     bracketBalance--;
                     i++;
                     continue;
@@ -166,31 +166,31 @@ class LogicExpression implements ILogicExpression {
     }
 
     @Override
-    public String translateToPostfix(String inputString) {
-        if (isCorrectSimplifiedInput(inputString)) {
+    public String translateToPostfix(String logicExpression) {
+        if (isCorrectSimplifiedInput(logicExpression)) {
 
             String result = "";
-            inputString = inputString.replace(" ", "");
+            logicExpression = logicExpression.replace(" ", "");
             Stack<Character> operationsStack = new Stack<>();
-            for (int i = 0; i < inputString.length(); i++) {
-                if (symbols.contains(inputString.charAt(i))) {
-                    result += inputString.charAt(i);
-                } else if (inputString.charAt(i) == '(')
-                    operationsStack.push(inputString.charAt(i));
-                else if (inputString.charAt(i) == ')') {
+            for (int i = 0; i < logicExpression.length(); i++) {
+                if (symbols.contains(logicExpression.charAt(i))) {
+                    result += logicExpression.charAt(i);
+                } else if (logicExpression.charAt(i) == '(')
+                    operationsStack.push(logicExpression.charAt(i));
+                else if (logicExpression.charAt(i) == ')') {
                     Character ch = operationsStack.pop();
                     while (ch != '(') {
                         result += ch;
                         ch = operationsStack.pop();
                     }
                 } else {
-                    if (!(operationsStack.empty()) && (LogicFunctions.GetPriority(inputString.charAt(i))
-                                <= LogicFunctions.GetPriority(operationsStack.peek()))) {
-                        while((!(operationsStack.empty()) && (LogicFunctions.GetPriority(inputString.charAt(i))
+                    if (!(operationsStack.empty()) && (LogicFunctions.GetPriority(logicExpression.charAt(i))
+                            <= LogicFunctions.GetPriority(operationsStack.peek()))) {
+                        while ((!(operationsStack.empty()) && (LogicFunctions.GetPriority(logicExpression.charAt(i))
                                 <= LogicFunctions.GetPriority(operationsStack.peek()))))
                             result += operationsStack.pop();
                     }
-                    operationsStack.push(inputString.charAt(i));
+                    operationsStack.push(logicExpression.charAt(i));
                 }
             }
 
@@ -204,84 +204,117 @@ class LogicExpression implements ILogicExpression {
         }
     }
 
-    @Override
-    public Byte toSolveExpression(String inputString) {
 
+    public Byte toSolveExpression(String logicExpression, HashMap<Character, Byte> values) {
         Byte result = 0; //Результат
         Stack<Byte> buffStack = new Stack<Byte>();
-        for (Byte x=0;x<2;x++) {
-            for (Byte y = 0; y < 2; y++) {
-               for (Byte z = 0; z < 2; z++){
 
-                    for (int i = 0; i < inputString.length(); i++) //Для каждого символа в строке
-                    {
-                        //Если символ - переменная, то читаем её и записываем на вершину стека
-                        if ((inputString.charAt(i) == 'x') || (inputString.charAt(i) == 'y') || (inputString.charAt(i) == 'z')) {
-                            switch (inputString.charAt(i)) {
-                                case 'x':
-                                    buffStack.push(x);
-                                    break;
-                                case 'y':
-                                    buffStack.push(y);
-                                    break;
-                                case 'z':
-                                    buffStack.push(z);
-                                    break;
-                            }
-                        } else if (operationsWithInversion.contains(inputString.charAt(i))) //Если символ - оператор
-                        {
-                            if (inputString.charAt(i) == '¬') {
-                                Byte top = buffStack.pop();
-                                result = LogicFunctions.Inversion(top);
-                                buffStack.push(result);
-                            } else {
-                                // если операция бинарная
-                                //Берем два последних значения из стека
-                                Byte secondOperand = buffStack.pop();
-                                Byte firstOperand = buffStack.pop();
+        for (int i = 0; i < logicExpression.length(); i++) //Для каждого символа в строке
+        {
+            //Если символ - переменная, то читаем её и записываем на вершину стека
+            if (symbols.contains(logicExpression.charAt(i))) {
+                buffStack.push(values.get(logicExpression.charAt(i)));
+            } else if (operationsWithInversion.contains(logicExpression.charAt(i))) //Если символ - оператор
+            {
+                if (logicExpression.charAt(i) == '¬') {
+                    Byte top = buffStack.pop();
+                    result = LogicFunctions.Inversion(top);
+                    buffStack.push(result);
+                } else {
+                    // если операция бинарная
+                    //Берем два последних значения из стека
+                    Byte secondOperand = buffStack.pop();
+                    Byte firstOperand = buffStack.pop();
 
-                                switch (inputString.charAt(i)) {
-                                    case '↓':
-                                        result = LogicFunctions.PierceArrow(firstOperand, secondOperand);
-                                        break;
-                                    case '|':
-                                        result = LogicFunctions.ShefferStroke(firstOperand, secondOperand);
-                                        break;
-                                    case '↔':
-                                        result = LogicFunctions.Equivalention(firstOperand, secondOperand);
-                                        break;
-                                    case '→':
-                                        result = LogicFunctions.Implication(firstOperand, secondOperand);
-                                        break;
-                                    case '←':
-                                        result = LogicFunctions.ReversedImplication(firstOperand, secondOperand);
-                                        break;
-                                    case '⊕':
-                                        result = LogicFunctions.AddMod2(firstOperand, secondOperand);
-                                        break;
-                                    case '∨':
-                                        result = LogicFunctions.Disjunction(firstOperand, secondOperand);
-                                        break;
-                                    case '∧':
-                                        result = LogicFunctions.Conjunction(firstOperand, secondOperand);
-                                        break;
-
-                                }
-                                buffStack.push(result); //Результат вычисления записываем обратно в стек
-                            }
-                        }
+                    switch (logicExpression.charAt(i)) {
+                        case '↓':
+                            result = LogicFunctions.PierceArrow(firstOperand, secondOperand);
+                            break;
+                        case '|':
+                            result = LogicFunctions.ShefferStroke(firstOperand, secondOperand);
+                            break;
+                        case '↔':
+                            result = LogicFunctions.Equivalention(firstOperand, secondOperand);
+                            break;
+                        case '→':
+                            result = LogicFunctions.Implication(firstOperand, secondOperand);
+                            break;
+                        case '←':
+                            result = LogicFunctions.ReversedImplication(firstOperand, secondOperand);
+                            break;
+                        case '⊕':
+                            result = LogicFunctions.AddMod2(firstOperand, secondOperand);
+                            break;
+                        case '∨':
+                            result = LogicFunctions.Disjunction(firstOperand, secondOperand);
+                            break;
+                        case '∧':
+                            result = LogicFunctions.Conjunction(firstOperand, secondOperand);
+                            break;
 
                     }
-
-                    System.out.println(x+" "+y + " "+ z +"_"+ result );
-
-                //Забираем результат всех вычислений из стека и возвращаем его
+                    buffStack.push(result); //Результат вычисления записываем обратно в стек
                 }
             }
 
         }
+        if (!buffStack.isEmpty()) // для случая входной строки из одной переменной без операций
+            result = buffStack.pop();
+
         return result;
     }
+
+
+    public ArrayList<Byte> takeTruthTable(String logicExpression) {
+        ArrayList<Byte> result = new ArrayList<>();
+
+        HashSet<Character> variables = takeVariables(logicExpression);
+        String postfixLogicExpression = translateToPostfix(logicExpression);
+        HashMap<Character, Byte> values;
+        if (!variables.isEmpty()) {
+            Character[] variables_array = variables.toArray(new Character[variables.size()]);
+
+
+
+
+            int i = 0;
+            while (i != Math.pow(2, variables_array.length)) {
+                String zeroOneSelection = "0".repeat(variables_array.length - Integer.toBinaryString(i).length()) + Integer.toBinaryString(i);// набор
+                String[] selectionArray = zeroOneSelection.split("");
+
+
+                values = new HashMap<>();
+
+                for (int j = 0; j < variables_array.length; j++) {
+                    values.put(variables_array[j], Byte.parseByte(selectionArray[j]));
+                }
+                values.put('0', (byte) 0);
+                values.put('1', (byte) 1);
+                result.add(toSolveExpression(postfixLogicExpression, values));
+
+                i++;
+            }
+        } else {
+            values = new HashMap<>();
+            values.put('0', (byte) 0);
+            values.put('1', (byte) 1);
+            result.add(toSolveExpression(postfixLogicExpression, values));
+        }
+
+        return result;
+
+    }
+
+    private HashSet<Character> takeVariables(String logicExpression) {
+        HashSet<Character> setOfVariables = new HashSet<>();
+        for (int i = 0; i < logicExpression.length(); i++) {
+            if (symbolsWithoutOneZero.contains(logicExpression.charAt(i)))
+                setOfVariables.add(logicExpression.charAt(i));
+
+        }
+        return setOfVariables;
+    }
+
 
     static private class LogicFunctions {
 
@@ -361,6 +394,36 @@ class LogicExpression implements ILogicExpression {
             }
         }
 
+        static private byte GetPriority(char ch, byte ReversedImplicationPriority, byte ImplicationPriority, byte EquivalentionPriority, byte AddMod2Priority,
+                                        byte PierceArrowPriority, byte DisjunctionPriority, byte ShefferStrokePriority, byte ConjunctionPriority, byte InversionPriority) {
+            switch (ch) {
+                case '(':
+                    return 0;
+                case ')':
+                    return 0;
+                case '←':
+                    return ReversedImplicationPriority;
+                case '→':
+                    return ImplicationPriority;
+                case '↔':
+                    return EquivalentionPriority;
+                case '⊕':
+                    return AddMod2Priority;
+                case '↓':
+                    return PierceArrowPriority;
+                case '∨':
+                    return DisjunctionPriority;
+                case '|':
+                    return ShefferStrokePriority;
+                case '∧':
+                    return ConjunctionPriority;
+                case '¬':
+                    return InversionPriority;
+                default:
+                    return 0;
+            }
+        }
+
     }
 }
 
@@ -368,39 +431,16 @@ class LogicExpression implements ILogicExpression {
 public class Main {
 
     public static void main(String[] args) throws IOException {
-
-        //BufferedReader reader = new BufferedReader(new InputStreamReader(System.in)); ¬' ,  '∧', '|',     '∨', '↓',   '⊕' ,'↔', '→', '←'
-        //String inpString= reader.readLine();
-        String inpString = "x|y∨z∧(¬x)↔y→(z⊕x) ";
-                          //!(!x*(!y)+(!(!(!((!z)@x)#(!(y*((!z)))))@(!(!x*y=(!(z*(!x))))))))"
-        LogicExpression postfix = new LogicExpression();
-        String post = postfix.translateToPostfix(inpString);
-        System.out.println(post);
-        System.out.println(postfix.toSolveExpression(post));
+        LogicExpression expression = new LogicExpression();
 
     }
 }
-//ABC!D*!*!E!+!%!FG!HI#%!=!K!L*%!%! - последняя
-/*    "x|y∨z∧(¬x)↔y→(z⊕x)                                   xy|zx¬∧∨y↔zx⊕→
-
- ((((x|y)∨(z∧(¬x)))↔y)→(z⊕x))                               xy|zx¬∧∨y↔zx⊕→
- String[] mass = new String[]{"a∧  (¬b  ∧c  )↓d", "a", "a⊕a⊕a⊕b⊕c⊕d⊕k", "1↓ 1", "¬ 0", "¬0↓d↓A", "¬0↓d⊕(v↓(A))", "(¬0)↓d⊕(s↓(A))", "((¬0)↓d⊕(q↓(A)))",
-                "(((¬0)↓z⊕(z⊕d⊕(a↓(A)))))", "((  (¬0) ↓ (d) ⊕ (a↓(A))  ))", "((((((a))))))", "¬(¬(¬(¬(¬(¬(¬a))))))", "¬((¬((¬(¬a↓(¬d)⊕b)))))", "a←b←c←d←z←(k←(s←s))",
-                "a←b←(c←(d))←z←(k←(s←s))", "a|b∨c∧(¬d)↔V→(a⊕m)","¬a⊕¬a⊕¬a⊕¬b⊕¬c⊕¬d⊕¬k",
-
-                "¬( ¬(A∨( ¬(B⊕ (¬C))))←(¬( ¬(¬D∧E)↓F↔(¬(¬G→H)) )))",
-                "¬(¬A∧(¬B)∨(¬( ¬( ¬((¬C)→D)↓(¬(E∧((¬F)))))←(¬(¬G∧H↔(¬(I∧(¬K))))) )) )",
-                "¬( ¬(A←(¬(¬(B∧(¬(¬C∧D)))∨(¬E) )))→(¬(¬(F↔(¬(¬G←H⊕I)))→(¬K)∧L)    )   )"};
-        String[] massGood = new String[]{"a∧  (¬b  ∧c  )↓d", "a", "a⊕a⊕a⊕b⊕c⊕d⊕k", "1↓ 1", "¬ 0", "¬0↓d↓A", "¬0↓d⊕(v↓(A))", "¬0↓d⊕(s↓(A))", "(¬0↓d⊕(q↓(A)))",
+/*
+a∧  (¬b  ∧c  )↓d", "a", "a⊕a⊕a⊕b⊕c⊕d⊕k", "1↓ 1", "¬ 0", "¬0↓d↓A", "¬0↓d⊕(v↓(A))", "¬0↓d⊕(s↓(A))", "(¬0↓d⊕(q↓(A)))",
                 "(((¬0)↓z⊕(z⊕d⊕(a↓(A)))))", "((  ¬0 ↓ (d) ⊕ (a↓(A))  ))", "((((((a))))))", "¬(¬(¬(¬(¬(¬(¬a))))))", "¬((¬((¬(¬a↓¬d⊕b)))))", "a←b←c←d←z←(k←(s←s))",
-                "a←b←(c←(d))←z←(k←(s←s))", "a|b∨c∧¬d↔V→(a⊕m)", "¬a⊕¬a⊕¬a⊕¬b⊕¬c⊕¬d⊕¬k",
+                "a←b←(c←(d))←z←(k←(s←s))", "a|b∨c∧¬d↔v→(a⊕m)", "¬a⊕¬a⊕¬a⊕¬b⊕¬c⊕¬d⊕¬k",
 
                 "¬( ¬(A∨( ¬(B⊕ ¬C)))←(¬( ¬(¬D∧E)↓F↔(¬(¬G→H)) )))",
                 "¬(¬A∧¬B∨(¬( ¬( ¬(¬C→D)↓(¬(E∧¬F)))←(¬(¬G∧H↔(¬(I∧¬K)))) )) )",
-                "¬( ¬(A←(¬(¬(B∧(¬(¬C∧D)))∨¬E )))→(¬(¬(F↔(¬(¬G←H⊕I)))→¬K∧L)    )   )"};
-
-        for (var i=0;i<mass.length;i++) {
-            System.out.println(postfix.translateToPostfix(mass[i]));
-            System.out.println(postfix.translateToPostfix(massGood[i]));
-        }
+                "¬( ¬(A←(¬(¬(B∧(¬(¬C∧D)))∨¬E )))→(¬(¬(F↔(¬(¬G←H⊕I)))→¬K∧L)    )   )
  */
