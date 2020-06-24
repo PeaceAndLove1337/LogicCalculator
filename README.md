@@ -6,6 +6,7 @@
 
 Главный класс - LogicExpression наследуется от интерфейса ILogicExpression
 Данный класс содержит в себе следующие методы:
+
 1)Boolean isCorrectInput(String logicExpression) - проверяет, является ли входная строка верным, правильно заданным лог. выражением.
 
 2)Boolean isCorrectSimplifiedInput(String logicExpression)- проверяет то же самое, однако лишь с тем условием, что инверсия может стоять сразу после бинарной операции,
