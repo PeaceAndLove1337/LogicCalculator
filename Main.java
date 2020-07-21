@@ -1,7 +1,9 @@
 package project;
 
 
+import java.io.Console;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 
 interface ILogicExpression {
@@ -18,18 +20,13 @@ interface ILogicExpression {
  *
  *
  *
- * _________________________________________________________________________________________________________________________________________
- *
+ *_________________________________________________________________________________________________________________________________________
  *_________________________________________________________________________________________________________________________________________
  *
- * Сделать тестовые примеры для таблиц истинности
- *
- * Подумать что можно сделать с функциональностью, касающейся 0 и 1 на входе(как изображать таблицу истинности),
- * а так же касаемо входа без операций. Напр: "а".
+
  * Программа должна будет поддерживать возможность изменения приоритетов операций.(Реализовано в методе GetPriority в LogicFunctions
  *
  *_________________________________________________________________________________________________________________________________________
- *  Проверить таблицы истинности для всех инпутов.
  *_________________________________________________________________________________________________________________________________________
  * Логика класса такова: экземпляр класса имеет несколько открытых методов: проверить корректность лог. выражения, преобразовать его в  польскую запись,
  *  построить таблицу истинности (), каждый метод последовательно вызывает предыдущие, если они есть.
@@ -51,55 +48,119 @@ class LogicExpression implements ILogicExpression {
 
     @Override
     public Boolean isCorrectInput(String logicExpression) {
-        int bracketBalance = 0;
-        //Boolean isRight=true;
+        Stack <Character> bracketBalanceStack=new Stack<>();
+
         logicExpression = logicExpression.replace(" ", "");
+
         logicExpression = "=" + logicExpression + "=";
-        //System.out.println(inputString);
+
         int i = 1;
         while (logicExpression.charAt(i) != '=') {
 
             if (logicExpression.charAt(i) == '¬') {
-                if ((logicExpression.charAt(i - 1) == '(' || logicExpression.charAt(i - 1) == '=') && (logicExpression.charAt(i + 1) == '(' || symbols.contains(logicExpression.charAt(i + 1)))) {
+                if ((logicExpression.charAt(i - 1) == '(' || logicExpression.charAt(i - 1) == '{' ||
+                        logicExpression.charAt(i - 1) == '[' || logicExpression.charAt(i - 1) == '=') &&
+                        (logicExpression.charAt(i + 1) == '(' ||logicExpression.charAt(i + 1) == '{' ||
+                                logicExpression.charAt(i + 1) == '['|| symbols.contains(logicExpression.charAt(i + 1)))) {
                     i++;
                     continue;
                 } else
                     return false;
             } else if (symbols.contains(logicExpression.charAt(i))) {
-                if ((logicExpression.charAt(i - 1) == '(' || logicExpression.charAt(i - 1) == '=' || operationsWithInversion.contains(logicExpression.charAt(i - 1))) &&
-                        (operations.contains(logicExpression.charAt(i + 1)) || logicExpression.charAt(i + 1) == ')' || logicExpression.charAt(i + 1) == '=')) {
+                if ((logicExpression.charAt(i - 1) == '(' || logicExpression.charAt(i - 1) == '{' ||
+                        logicExpression.charAt(i - 1) == '['|| logicExpression.charAt(i - 1) == '=' || operationsWithInversion.contains(logicExpression.charAt(i - 1))) &&
+                        (operations.contains(logicExpression.charAt(i + 1)) || logicExpression.charAt(i + 1) == ')' || logicExpression.charAt(i + 1) == '}' ||
+                                logicExpression.charAt(i + 1) == ']' ||logicExpression.charAt(i + 1) == '=')) {
                     i++;
                     continue;
                 } else
                     return false;
             } else if (operations.contains(logicExpression.charAt(i))) {
-                if ((symbols.contains(logicExpression.charAt(i - 1)) || logicExpression.charAt(i - 1) == ')') &&
-                        (symbols.contains(logicExpression.charAt(i + 1)) || logicExpression.charAt(i + 1) == '(')) {
+                if ((symbols.contains(logicExpression.charAt(i - 1)) || logicExpression.charAt(i - 1) == ')' || logicExpression.charAt(i - 1) == '}' ||
+                        logicExpression.charAt(i - 1) == ']') &&
+                        (symbols.contains(logicExpression.charAt(i + 1)) || logicExpression.charAt(i + 1) == '('||
+                                logicExpression.charAt(i + 1) == '{'|| logicExpression.charAt(i + 1) == '[')) {
                     i++;
                     continue;
                 } else
                     return false;
             } else if (logicExpression.charAt(i) == '(') {
-                if ((logicExpression.charAt(i - 1) == '(' || logicExpression.charAt(i - 1) == '=' || operationsWithInversion.contains(logicExpression.charAt(i - 1))) &&
-                        (symbols.contains(logicExpression.charAt(i + 1)) || logicExpression.charAt(i + 1) == '¬' || logicExpression.charAt(i + 1) == '(')) {
-                    bracketBalance++;
+                if ((logicExpression.charAt(i - 1) == '(' ||logicExpression.charAt(i - 1) == '[' ||logicExpression.charAt(i - 1) == '{'
+                        || logicExpression.charAt(i - 1) == '=' || operationsWithInversion.contains(logicExpression.charAt(i - 1))) &&
+                        (symbols.contains(logicExpression.charAt(i + 1)) || logicExpression.charAt(i + 1) == '¬'
+                                || logicExpression.charAt(i + 1) == '('|| logicExpression.charAt(i + 1) == '['|| logicExpression.charAt(i + 1) == '{')) {
+                    bracketBalanceStack.push('(');
                     i++;
                     continue;
                 } else
                     return false;
             } else if (logicExpression.charAt(i) == ')') {
-                if ((symbols.contains(logicExpression.charAt(i - 1)) || logicExpression.charAt(i - 1) == ')') &&
-                        (logicExpression.charAt(i + 1) == '=' || logicExpression.charAt(i + 1) == ')' || operations.contains(logicExpression.charAt(i + 1)))) {
-                    bracketBalance--;
+                if ((symbols.contains(logicExpression.charAt(i - 1)) || logicExpression.charAt(i - 1) == ')'||
+                        logicExpression.charAt(i - 1) == '}'|| logicExpression.charAt(i - 1) == ']') &&
+                        (logicExpression.charAt(i + 1) == '=' || logicExpression.charAt(i + 1) == ')'
+                                || logicExpression.charAt(i + 1) == '}'|| logicExpression.charAt(i + 1) == ']'|| operations.contains(logicExpression.charAt(i + 1)))) {
+                    if (bracketBalanceStack.peek()=='(')
+                        bracketBalanceStack.pop();
+                        else
+                            bracketBalanceStack.push(')');
                     i++;
                     continue;
                 } else
                     return false;
-            } else
+            }
+            else if (logicExpression.charAt(i) == '{') {
+                if ((logicExpression.charAt(i - 1) == '(' ||logicExpression.charAt(i - 1) == '[' ||logicExpression.charAt(i - 1) == '{'
+                        || logicExpression.charAt(i - 1) == '=' || operationsWithInversion.contains(logicExpression.charAt(i - 1))) &&
+                        (symbols.contains(logicExpression.charAt(i + 1)) || logicExpression.charAt(i + 1) == '¬'
+                                || logicExpression.charAt(i + 1) == '('|| logicExpression.charAt(i + 1) == '['|| logicExpression.charAt(i + 1) == '{')) {
+                    bracketBalanceStack.push('{');
+                    i++;
+                    continue;
+                } else
+                    return false;
+            } else if (logicExpression.charAt(i) == '}') {
+                if ((symbols.contains(logicExpression.charAt(i - 1)) || logicExpression.charAt(i - 1) == ')'||
+                        logicExpression.charAt(i - 1) == '}'|| logicExpression.charAt(i - 1) == ']') &&
+                        (logicExpression.charAt(i + 1) == '=' || logicExpression.charAt(i + 1) == ')'
+                                || logicExpression.charAt(i + 1) == '}'|| logicExpression.charAt(i + 1) == ']'|| operations.contains(logicExpression.charAt(i + 1)))) {
+                    if (bracketBalanceStack.peek()=='{')
+                        bracketBalanceStack.pop();
+                    else
+                        bracketBalanceStack.push('}');
+                    i++;
+                    continue;
+                } else
+                    return false;
+            }
+            else if (logicExpression.charAt(i) == '[') {
+                if ((logicExpression.charAt(i - 1) == '(' ||logicExpression.charAt(i - 1) == '[' ||logicExpression.charAt(i - 1) == '{'
+                        || logicExpression.charAt(i - 1) == '=' || operationsWithInversion.contains(logicExpression.charAt(i - 1))) &&
+                        (symbols.contains(logicExpression.charAt(i + 1)) || logicExpression.charAt(i + 1) == '¬'
+                                || logicExpression.charAt(i + 1) == '('|| logicExpression.charAt(i + 1) == '['|| logicExpression.charAt(i + 1) == '{')) {
+                    bracketBalanceStack.push('[');
+                    i++;
+                    continue;
+                } else
+                    return false;
+            } else if (logicExpression.charAt(i) == ']') {
+                if ((symbols.contains(logicExpression.charAt(i - 1)) || logicExpression.charAt(i - 1) == ')'||
+                        logicExpression.charAt(i - 1) == '}'|| logicExpression.charAt(i - 1) == ']') &&
+                        (logicExpression.charAt(i + 1) == '=' || logicExpression.charAt(i + 1) == ')'
+                                || logicExpression.charAt(i + 1) == '}'|| logicExpression.charAt(i + 1) == ']'|| operations.contains(logicExpression.charAt(i + 1)))) {
+                    if (bracketBalanceStack.peek()=='[')
+                        bracketBalanceStack.pop();
+                    else
+                        bracketBalanceStack.push(']');
+                    i++;
+                    continue;
+                } else
+                    return false;
+            }
+            else
                 return false;
         }
 
-        if (bracketBalance == 0)
+        if (bracketBalanceStack.isEmpty())
             return true;
         else
             return false;
@@ -109,60 +170,122 @@ class LogicExpression implements ILogicExpression {
     //Упрощенный ввод позволяет использовать инверсию сразу после знака, не заключая инверсионное выражение в скобки. Т.е. Например a∧b∧(¬c)∧¬(¬a∧(¬d))=a∧b∧¬c∧¬(¬a∧¬d)
     //Таким образом читаемость сложных выражений повышается в разы
     public Boolean isCorrectSimplifiedInput(String logicExpression) {
-        int bracketBalance = 0;
-        //Boolean isRight=true;
+        Stack <Character> bracketBalanceStack=new Stack<>();
+
         logicExpression = logicExpression.replace(" ", "");
+
         logicExpression = "=" + logicExpression + "=";
 
         int i = 1;
         while (logicExpression.charAt(i) != '=') {
 
             if (logicExpression.charAt(i) == '¬') {
-                if ((logicExpression.charAt(i - 1) == '(' || logicExpression.charAt(i - 1) == '=' || operations.contains(logicExpression.charAt(i - 1))) && (logicExpression.charAt(i + 1) == '(' || symbols.contains(logicExpression.charAt(i + 1)))) {
+                if ((logicExpression.charAt(i - 1) == '(' || logicExpression.charAt(i - 1) == '{' ||
+                        logicExpression.charAt(i - 1) == '[' || logicExpression.charAt(i - 1) == '=' || operations.contains(logicExpression.charAt(i - 1))) &&
+                        (logicExpression.charAt(i + 1) == '(' ||logicExpression.charAt(i + 1) == '{' ||
+                                logicExpression.charAt(i + 1) == '['|| symbols.contains(logicExpression.charAt(i + 1)))) {
                     i++;
                     continue;
                 } else
                     return false;
             } else if (symbols.contains(logicExpression.charAt(i))) {
-                if ((logicExpression.charAt(i - 1) == '(' || logicExpression.charAt(i - 1) == '=' || operationsWithInversion.contains(logicExpression.charAt(i - 1))) &&
-                        (operations.contains(logicExpression.charAt(i + 1)) || logicExpression.charAt(i + 1) == ')' || logicExpression.charAt(i + 1) == '=')) {
+                if ((logicExpression.charAt(i - 1) == '(' || logicExpression.charAt(i - 1) == '{' ||
+                        logicExpression.charAt(i - 1) == '['|| logicExpression.charAt(i - 1) == '=' || operationsWithInversion.contains(logicExpression.charAt(i - 1))) &&
+                        (operations.contains(logicExpression.charAt(i + 1)) || logicExpression.charAt(i + 1) == ')' || logicExpression.charAt(i + 1) == '}' ||
+                                logicExpression.charAt(i + 1) == ']' ||logicExpression.charAt(i + 1) == '=')) {
                     i++;
                     continue;
                 } else
                     return false;
             } else if (operations.contains(logicExpression.charAt(i))) {
-                if ((symbols.contains(logicExpression.charAt(i - 1)) || logicExpression.charAt(i - 1) == ')') &&
-                        (symbols.contains(logicExpression.charAt(i + 1)) || logicExpression.charAt(i + 1) == '(' || logicExpression.charAt(i + 1) == '¬')) {
+                if ((symbols.contains(logicExpression.charAt(i - 1)) || logicExpression.charAt(i - 1) == ')' || logicExpression.charAt(i - 1) == '}' ||
+                        logicExpression.charAt(i - 1) == ']') &&
+                        (symbols.contains(logicExpression.charAt(i + 1)) || logicExpression.charAt(i + 1) == '¬' ||  logicExpression.charAt(i + 1) == '('||
+                                logicExpression.charAt(i + 1) == '{'|| logicExpression.charAt(i + 1) == '[')) {
                     i++;
                     continue;
                 } else
                     return false;
             } else if (logicExpression.charAt(i) == '(') {
-                if ((logicExpression.charAt(i - 1) == '(' || logicExpression.charAt(i - 1) == '=' || operationsWithInversion.contains(logicExpression.charAt(i - 1))) &&
-                        (symbols.contains(logicExpression.charAt(i + 1)) || logicExpression.charAt(i + 1) == '¬' || logicExpression.charAt(i + 1) == '(')) {
-                    bracketBalance++;
+                if ((logicExpression.charAt(i - 1) == '(' ||logicExpression.charAt(i - 1) == '[' ||logicExpression.charAt(i - 1) == '{'
+                        || logicExpression.charAt(i - 1) == '=' || operationsWithInversion.contains(logicExpression.charAt(i - 1))) &&
+                        (symbols.contains(logicExpression.charAt(i + 1)) || logicExpression.charAt(i + 1) == '¬'
+                                || logicExpression.charAt(i + 1) == '('|| logicExpression.charAt(i + 1) == '['|| logicExpression.charAt(i + 1) == '{')) {
+                    bracketBalanceStack.push('(');
                     i++;
                     continue;
                 } else
                     return false;
             } else if (logicExpression.charAt(i) == ')') {
-                if ((symbols.contains(logicExpression.charAt(i - 1)) || logicExpression.charAt(i - 1) == ')') &&
-                        (logicExpression.charAt(i + 1) == '=' || logicExpression.charAt(i + 1) == ')' || operations.contains(logicExpression.charAt(i + 1)))) {
-                    bracketBalance--;
+                if ((symbols.contains(logicExpression.charAt(i - 1)) || logicExpression.charAt(i - 1) == ')'||
+                        logicExpression.charAt(i - 1) == '}'|| logicExpression.charAt(i - 1) == ']') &&
+                        (logicExpression.charAt(i + 1) == '=' || logicExpression.charAt(i + 1) == ')'
+                                || logicExpression.charAt(i + 1) == '}'|| logicExpression.charAt(i + 1) == ']'|| operations.contains(logicExpression.charAt(i + 1)))) {
+                    if (bracketBalanceStack.peek()=='(')
+                        bracketBalanceStack.pop();
+                    else
+                        bracketBalanceStack.push(')');
                     i++;
                     continue;
                 } else
                     return false;
-            } else
+            }
+            else if (logicExpression.charAt(i) == '{') {
+                if ((logicExpression.charAt(i - 1) == '(' ||logicExpression.charAt(i - 1) == '[' ||logicExpression.charAt(i - 1) == '{'
+                        || logicExpression.charAt(i - 1) == '=' || operationsWithInversion.contains(logicExpression.charAt(i - 1))) &&
+                        (symbols.contains(logicExpression.charAt(i + 1)) || logicExpression.charAt(i + 1) == '¬'
+                                || logicExpression.charAt(i + 1) == '('|| logicExpression.charAt(i + 1) == '['|| logicExpression.charAt(i + 1) == '{')) {
+                    bracketBalanceStack.push('{');
+                    i++;
+                    continue;
+                } else
+                    return false;
+            } else if (logicExpression.charAt(i) == '}') {
+                if ((symbols.contains(logicExpression.charAt(i - 1)) || logicExpression.charAt(i - 1) == ')'||
+                        logicExpression.charAt(i - 1) == '}'|| logicExpression.charAt(i - 1) == ']') &&
+                        (logicExpression.charAt(i + 1) == '=' || logicExpression.charAt(i + 1) == ')'
+                                || logicExpression.charAt(i + 1) == '}'|| logicExpression.charAt(i + 1) == ']'|| operations.contains(logicExpression.charAt(i + 1)))) {
+                    if (bracketBalanceStack.peek()=='{')
+                        bracketBalanceStack.pop();
+                    else
+                        bracketBalanceStack.push('}');
+                    i++;
+                    continue;
+                } else
+                    return false;
+            }
+            else if (logicExpression.charAt(i) == '[') {
+                if ((logicExpression.charAt(i - 1) == '(' ||logicExpression.charAt(i - 1) == '[' ||logicExpression.charAt(i - 1) == '{'
+                        || logicExpression.charAt(i - 1) == '=' || operationsWithInversion.contains(logicExpression.charAt(i - 1))) &&
+                        (symbols.contains(logicExpression.charAt(i + 1)) || logicExpression.charAt(i + 1) == '¬'
+                                || logicExpression.charAt(i + 1) == '('|| logicExpression.charAt(i + 1) == '['|| logicExpression.charAt(i + 1) == '{')) {
+                    bracketBalanceStack.push('[');
+                    i++;
+                    continue;
+                } else
+                    return false;
+            } else if (logicExpression.charAt(i) == ']') {
+                if ((symbols.contains(logicExpression.charAt(i - 1)) || logicExpression.charAt(i - 1) == ')'||
+                        logicExpression.charAt(i - 1) == '}'|| logicExpression.charAt(i - 1) == ']') &&
+                        (logicExpression.charAt(i + 1) == '=' || logicExpression.charAt(i + 1) == ')'
+                                || logicExpression.charAt(i + 1) == '}'|| logicExpression.charAt(i + 1) == ']'|| operations.contains(logicExpression.charAt(i + 1)))) {
+                    if (bracketBalanceStack.peek()=='[')
+                        bracketBalanceStack.pop();
+                    else
+                        bracketBalanceStack.push(']');
+                    i++;
+                    continue;
+                } else
+                    return false;
+            }
+            else
                 return false;
         }
 
-
-        if (bracketBalance == 0)
+        if (bracketBalanceStack.isEmpty())
             return true;
         else
             return false;
-
     }
 
     @Override
@@ -266,7 +389,7 @@ class LogicExpression implements ILogicExpression {
 
 
     public ArrayList<Byte> takeTruthTable(String logicExpression) {
-        ArrayList<Byte> result = new ArrayList<>();
+          ArrayList<Byte> result = new ArrayList<>();
 
         HashSet<Character> variables = takeVariables(logicExpression);
         String postfixLogicExpression = translateToPostfix(logicExpression);
@@ -279,7 +402,12 @@ class LogicExpression implements ILogicExpression {
 
             int i = 0;
             while (i != Math.pow(2, variables_array.length)) {
-                String zeroOneSelection = "0".repeat(variables_array.length - Integer.toBinaryString(i).length()) + Integer.toBinaryString(i);// набор
+                String zeroOneSelection;
+				
+				 for (int v=0; v < variables_array.length - Integer.toBinaryString(i).length() ;v++)
+                    zeroOneSelection+="0";
+                zeroOneSelection+=Integer.toBinaryString(i);
+				
                 String[] selectionArray = zeroOneSelection.split("");
 
 
@@ -304,7 +432,9 @@ class LogicExpression implements ILogicExpression {
         return result;
 
     }
-
+           
+				
+				
     private HashSet<Character> takeVariables(String logicExpression) {
         HashSet<Character> setOfVariables = new HashSet<>();
         for (int i = 0; i < logicExpression.length(); i++) {
@@ -431,16 +561,18 @@ class LogicExpression implements ILogicExpression {
 public class Main {
 
     public static void main(String[] args) throws IOException {
+
         LogicExpression expression = new LogicExpression();
+
+
+        expression.isCorrectInput("{{}({}{}{}[])()}");
+
+        String inputLogicExpression = "a|b∨c∧¬d↔v→(a⊕m)";
+        var elemsAr=expression.takeTruthTable(inputLogicExpression);
+        Byte[] elems = elemsAr.toArray(new Byte[0]);
+        System.out.println(elems[1]);
+//
 
     }
 }
-/*
-a∧  (¬b  ∧c  )↓d", "a", "a⊕a⊕a⊕b⊕c⊕d⊕k", "1↓ 1", "¬ 0", "¬0↓d↓A", "¬0↓d⊕(v↓(A))", "¬0↓d⊕(s↓(A))", "(¬0↓d⊕(q↓(A)))",
-                "(((¬0)↓z⊕(z⊕d⊕(a↓(A)))))", "((  ¬0 ↓ (d) ⊕ (a↓(A))  ))", "((((((a))))))", "¬(¬(¬(¬(¬(¬(¬a))))))", "¬((¬((¬(¬a↓¬d⊕b)))))", "a←b←c←d←z←(k←(s←s))",
-                "a←b←(c←(d))←z←(k←(s←s))", "a|b∨c∧¬d↔v→(a⊕m)", "¬a⊕¬a⊕¬a⊕¬b⊕¬c⊕¬d⊕¬k",
 
-                "¬( ¬(A∨( ¬(B⊕ ¬C)))←(¬( ¬(¬D∧E)↓F↔(¬(¬G→H)) )))",
-                "¬(¬A∧¬B∨(¬( ¬( ¬(¬C→D)↓(¬(E∧¬F)))←(¬(¬G∧H↔(¬(I∧¬K)))) )) )",
-                "¬( ¬(A←(¬(¬(B∧(¬(¬C∧D)))∨¬E )))→(¬(¬(F↔(¬(¬G←H⊕I)))→¬K∧L)    )   )
- */
