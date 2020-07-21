@@ -99,10 +99,10 @@ class LogicExpression implements ILogicExpression {
                         logicExpression.charAt(i - 1) == '}'|| logicExpression.charAt(i - 1) == ']') &&
                         (logicExpression.charAt(i + 1) == '=' || logicExpression.charAt(i + 1) == ')'
                                 || logicExpression.charAt(i + 1) == '}'|| logicExpression.charAt(i + 1) == ']'|| operations.contains(logicExpression.charAt(i + 1)))) {
-                    if (bracketBalanceStack.peek()=='(')
+                    if (!bracketBalanceStack.isEmpty() && bracketBalanceStack.peek()=='(')
                         bracketBalanceStack.pop();
-                        else
-                            bracketBalanceStack.push(')');
+                    else
+                        bracketBalanceStack.push(')');
                     i++;
                     continue;
                 } else
@@ -123,7 +123,7 @@ class LogicExpression implements ILogicExpression {
                         logicExpression.charAt(i - 1) == '}'|| logicExpression.charAt(i - 1) == ']') &&
                         (logicExpression.charAt(i + 1) == '=' || logicExpression.charAt(i + 1) == ')'
                                 || logicExpression.charAt(i + 1) == '}'|| logicExpression.charAt(i + 1) == ']'|| operations.contains(logicExpression.charAt(i + 1)))) {
-                    if (bracketBalanceStack.peek()=='{')
+                    if (!bracketBalanceStack.isEmpty() && bracketBalanceStack.peek()=='{')
                         bracketBalanceStack.pop();
                     else
                         bracketBalanceStack.push('}');
@@ -147,7 +147,7 @@ class LogicExpression implements ILogicExpression {
                         logicExpression.charAt(i - 1) == '}'|| logicExpression.charAt(i - 1) == ']') &&
                         (logicExpression.charAt(i + 1) == '=' || logicExpression.charAt(i + 1) == ')'
                                 || logicExpression.charAt(i + 1) == '}'|| logicExpression.charAt(i + 1) == ']'|| operations.contains(logicExpression.charAt(i + 1)))) {
-                    if (bracketBalanceStack.peek()=='[')
+                    if (!bracketBalanceStack.isEmpty() && bracketBalanceStack.peek()=='[')
                         bracketBalanceStack.pop();
                     else
                         bracketBalanceStack.push(']');
@@ -221,7 +221,7 @@ class LogicExpression implements ILogicExpression {
                         logicExpression.charAt(i - 1) == '}'|| logicExpression.charAt(i - 1) == ']') &&
                         (logicExpression.charAt(i + 1) == '=' || logicExpression.charAt(i + 1) == ')'
                                 || logicExpression.charAt(i + 1) == '}'|| logicExpression.charAt(i + 1) == ']'|| operations.contains(logicExpression.charAt(i + 1)))) {
-                    if (bracketBalanceStack.peek()=='(')
+                    if (!bracketBalanceStack.isEmpty() && bracketBalanceStack.peek()=='(')
                         bracketBalanceStack.pop();
                     else
                         bracketBalanceStack.push(')');
@@ -245,7 +245,7 @@ class LogicExpression implements ILogicExpression {
                         logicExpression.charAt(i - 1) == '}'|| logicExpression.charAt(i - 1) == ']') &&
                         (logicExpression.charAt(i + 1) == '=' || logicExpression.charAt(i + 1) == ')'
                                 || logicExpression.charAt(i + 1) == '}'|| logicExpression.charAt(i + 1) == ']'|| operations.contains(logicExpression.charAt(i + 1)))) {
-                    if (bracketBalanceStack.peek()=='{')
+                    if (!bracketBalanceStack.isEmpty() && bracketBalanceStack.peek()=='{')
                         bracketBalanceStack.pop();
                     else
                         bracketBalanceStack.push('}');
@@ -269,7 +269,7 @@ class LogicExpression implements ILogicExpression {
                         logicExpression.charAt(i - 1) == '}'|| logicExpression.charAt(i - 1) == ']') &&
                         (logicExpression.charAt(i + 1) == '=' || logicExpression.charAt(i + 1) == ')'
                                 || logicExpression.charAt(i + 1) == '}'|| logicExpression.charAt(i + 1) == ']'|| operations.contains(logicExpression.charAt(i + 1)))) {
-                    if (bracketBalanceStack.peek()=='[')
+                    if (!bracketBalanceStack.isEmpty() && bracketBalanceStack.peek()=='[')
                         bracketBalanceStack.pop();
                     else
                         bracketBalanceStack.push(']');
@@ -389,28 +389,33 @@ class LogicExpression implements ILogicExpression {
 
 
     public ArrayList<Byte> takeTruthTable(String logicExpression) {
-          ArrayList<Byte> result = new ArrayList<>();
+        ArrayList<Byte> result = new ArrayList<>();
 
         HashSet<Character> variables = takeVariables(logicExpression);
         String postfixLogicExpression = translateToPostfix(logicExpression);
         HashMap<Character, Byte> values;
         if (!variables.isEmpty()) {
             Character[] variables_array = variables.toArray(new Character[variables.size()]);
-
-
-
+            //////////////////////////////////////////////////
+            for (int k=0;k<variables_array.length;k++){
+                System.out.print(variables_array[k]+" ");
+            }
+            System.out.println("RESULT:");
+            //////////////////////////////////////////////////
 
             int i = 0;
             while (i != Math.pow(2, variables_array.length)) {
-                String zeroOneSelection;
-				
-				 for (int v=0; v < variables_array.length - Integer.toBinaryString(i).length() ;v++)
+                //String zeroOneSelection = "0".repeat(variables_array.length - Integer.toBinaryString(i).length()) + Integer.toBinaryString(i);// набор
+                String zeroOneSelection ="";  // набор
+                for (int v=0; v < variables_array.length - Integer.toBinaryString(i).length() ;v++)
                     zeroOneSelection+="0";
                 zeroOneSelection+=Integer.toBinaryString(i);
-				
                 String[] selectionArray = zeroOneSelection.split("");
-
-
+                //////////////////////////////////////////////////
+                for (int k=0;k<selectionArray.length;k++){
+                    System.out.print(selectionArray[k]+" ");
+                }
+                //////////////////////////////////////////////////
                 values = new HashMap<>();
 
                 for (int j = 0; j < variables_array.length; j++) {
@@ -418,23 +423,24 @@ class LogicExpression implements ILogicExpression {
                 }
                 values.put('0', (byte) 0);
                 values.put('1', (byte) 1);
-                result.add(toSolveExpression(postfixLogicExpression, values));
-
+                Byte resultOnIteration=toSolveExpression(postfixLogicExpression, values);
+                result.add(resultOnIteration);
+                System.out.println("\t"+resultOnIteration);
                 i++;
             }
         } else {
             values = new HashMap<>();
             values.put('0', (byte) 0);
             values.put('1', (byte) 1);
-            result.add(toSolveExpression(postfixLogicExpression, values));
+            Byte resultOnIteration=toSolveExpression(postfixLogicExpression, values);
+            result.add(resultOnIteration);
+            System.out.println("RESULT:\t"+resultOnIteration);
         }
 
         return result;
 
     }
-           
-				
-				
+
     private HashSet<Character> takeVariables(String logicExpression) {
         HashSet<Character> setOfVariables = new HashSet<>();
         for (int i = 0; i < logicExpression.length(); i++) {
@@ -565,7 +571,7 @@ public class Main {
         LogicExpression expression = new LogicExpression();
 
 
-        expression.isCorrectInput("{{}({}{}{}[])()}");
+        expression.isCorrectInput("((((a)))))");
 
         String inputLogicExpression = "a|b∨c∧¬d↔v→(a⊕m)";
         var elemsAr=expression.takeTruthTable(inputLogicExpression);
