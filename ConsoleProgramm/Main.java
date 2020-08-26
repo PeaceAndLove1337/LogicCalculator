@@ -5,12 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 
-interface ILogicExpression {
-    Boolean isCorrectInput(String inputString);
-
-    String translateToPostfix(String inputString);
-
-}
 
 
 
@@ -38,7 +32,7 @@ interface ILogicExpression {
  */
 
 
-class LogicExpression implements ILogicExpression {
+class LogicExpression  {
     private HashSet<Character> operationsWithInversion = new HashSet<Character>(Arrays.asList('¬', '∧', '|', '∨', '↓', '⊕', '↔', '→', '←'));
 
     private HashSet<Character> operations = new HashSet<Character>(Arrays.asList('∧', '|', '∨', '↓', '⊕', '↔', '→', '←'));
@@ -50,7 +44,7 @@ class LogicExpression implements ILogicExpression {
             'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
             'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'));
 
-    @Override
+
     public Boolean isCorrectInput(String logicExpression) {
         int bracketBalance = 0;
         //Boolean isRight=true;
@@ -166,7 +160,7 @@ class LogicExpression implements ILogicExpression {
 
     }
 
-    @Override
+
     public String translateToPostfix(String logicExpression) {
         if (isCorrectSimplifiedInput(logicExpression)) {
 
